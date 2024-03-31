@@ -7,7 +7,7 @@ import numpy as np
 from physionet import PhysioNet, get_data_min_max
 from sklearn import model_selection
 from sklearn import metrics
-
+import random
 def diversity_regularization(time_points, drate=0.1):
     """
     시간 점들 간의 다양성을 증진시키기 위한 레귤라리제이션 항을 계산
@@ -30,6 +30,37 @@ def diversity_regularization(time_points, drate=0.1):
     regularization = penalties.sum() / (time_points.size(0) * time_points.size(1) * (time_points.size(1) - 1))
     
     return regularization
+
+import torch
+
+def batch_cosine_similarity_penalty(X):
+    # Cosine similarity를 계산하기 전에 입력 X의 크기를 확인합니다.
+    # X의 차원: (batch size, time point, feature)
+    batch_size, time_point, num_features = X.shape
+    
+    # 각 배치에 대해 독립적으로 cosine similarity를 계산하기 위해 반복문을 사용합니다.
+    penalties = []
+    for batch in range(batch_size):
+        # 현재 배치 선택: (time point, feature)
+        current_batch = X[batch]
+        
+        # 정규화
+        norm = torch.norm(current_batch, p=2, dim=1, keepdim=True)
+        current_batch_norm = current_batch / (norm + 1e-6)
+        
+        # Cosine similarity 계산
+        similarity_matrix = torch.matmul(current_batch_norm, current_batch_norm.T)
+        
+        # 자기 자신과의 similarity(1)를 제외하고 나머지 값들의 합을 구합니다.
+        num_elements = time_point
+        penalty = (similarity_matrix.sum() - num_elements) / (num_elements * (num_elements - 1))
+        
+        penalties.append(penalty)
+    
+    # 모든 배치에 대한 평균 penalty 계산
+    average_penalty = sum(penalties) / batch_size
+    
+    return average_penalty
 
 
 def count_parameters(model):

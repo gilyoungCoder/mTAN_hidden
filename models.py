@@ -97,8 +97,8 @@ class TimeSeriesAugmentation(nn.Module):
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환하기 위한 레이어
         # self.final_transform = nn.Linear(hidden_dim, output_dim)
         self.final_transform = nn.Sequential(
-            nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim))
+            # nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim+1))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, t, x):
@@ -114,7 +114,8 @@ class TimeSeriesAugmentation(nn.Module):
         augmented_out = self.final_transform(augmented_representation)
         output = self.sigmoid(augmented_out)
         # 새로운 t와 x 분리
-        new_x, new_t = output[ :, :, :self.dim-1], output[:, :, -1]
+        new_x, new_t = output[ :, :, :-1], output[:, :, -1]
+
         return new_x, new_t
 
     

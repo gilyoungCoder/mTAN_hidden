@@ -46,7 +46,7 @@ parser.add_argument('--kl', action='store_true')
 parser.add_argument('--learn-emb', action='store_true')
 parser.add_argument('--dataset', type=str, default='physionet')
 parser.add_argument('--alpha', type=int, default=100)
-parser.add_argument('--beta', type=int, default=1000000)
+parser.add_argument('--beta', type=int, default= 50)
 parser.add_argument('--old-split', type=int, default=1)
 parser.add_argument('--nonormalize', action='store_true')
 parser.add_argument('--enc-num-heads', type=int, default=1)
@@ -86,8 +86,10 @@ if __name__ == '__main__':
     #     rec = models.enc_rnn3(
     #         dim, torch.linspace(0, 1., 128), args.latent_dim, args.rec_hidden, 128, learn_emb=args.learn_emb).to(device)
     # elif args.enc == 'mtan_rnn':
+    hidden_dim = 256
+
     rec = models.enc_mtan_rnn(
-        dim, torch.linspace(0, 1., args.num_ref_points), args.latent_dim, args.rec_hidden, 
+        hidden_dim, torch.linspace(0, 1., args.num_ref_points), args.latent_dim, args.rec_hidden, 
         embed_time=128, learn_emb=args.learn_emb, num_heads=args.enc_num_heads).to(device)
 
     # if args.dec == 'rnn3':
@@ -100,7 +102,7 @@ if __name__ == '__main__':
         
     classifier = models.create_classifier(args.latent_dim, args.rec_hidden).to(device)
 
-    aug = models.TimeSeriesAugmentation(dim*2+1, 256, dim+1, num_outputs=args.aug_ratio*num_tp).to(device)
+    aug = models.TimeSeriesAugmentation(dim*2+1, hidden_dim, dim+1, num_outputs=args.aug_ratio*num_tp).to(device)
     
     params = (list(rec.parameters()) + list(dec.parameters()) + list(classifier.parameters()) + list(aug.parameters()))
     print('parameters:', utils.count_parameters(rec), utils.count_parameters(dec), utils.count_parameters(classifier), utils.count_parameters(aug))
@@ -145,7 +147,10 @@ if __name__ == '__main__':
 
             # val = torch.where(mask == 1, x_aug, torch.zeros_like(x_aug))
             
-            reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
+            # reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
+
+            combined_aug = torch.cat((x_aug, tp_aug.unsqueeze(-1)*hidden_dim), 2)
+            reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
 
             out = rec(x_aug, tp_aug)
 
