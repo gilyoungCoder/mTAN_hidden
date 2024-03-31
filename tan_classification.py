@@ -55,7 +55,7 @@ parser.add_argument('--num-ref-points', type=int, default=128)
 parser.add_argument('--classify-pertp', action='store_true')
 parser.add_argument('--aug-ratio', type=int, default=2)
 parser.add_argument('--drate', type=float, default=0.5)
-parser.add_argument('--sethidden', type=int, default=128)
+parser.add_argument('--sethidden', type=int, default=64)
 
 
 args = parser.parse_args()
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         
     classifier = models.create_classifier(args.latent_dim, args.rec_hidden).to(device)
 
-    aug = models.TimeSeriesAugmentation(dim*2+1, hidden_dim, dim+1, num_outputs=args.aug_ratio*num_tp).to(device)
+    aug = models.TimeSeriesAugmentation(dim*2+1, 256, hidden_dim+1, num_outputs=args.aug_ratio*num_tp).to(device)
     
     params = (list(rec.parameters()) + list(dec.parameters()) + list(classifier.parameters()) + list(aug.parameters()))
     print('parameters:', utils.count_parameters(rec), utils.count_parameters(dec), utils.count_parameters(classifier), utils.count_parameters(aug))

@@ -92,7 +92,7 @@ class TimeSeriesAugmentation(nn.Module):
             nn.Linear(300, hidden_dim))
         self.dim = output_dim
         # Set Transformer 모델
-        self.set_transformer = SetTransformer(dim_input=hidden_dim, num_outputs=num_outputs, dim_output=hidden_dim+1)
+        self.set_transformer = SetTransformer(dim_input=hidden_dim, num_outputs=num_outputs, dim_output=output_dim)
         
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환하기 위한 레이어
         # self.final_transform = nn.Linear(hidden_dim, output_dim)
