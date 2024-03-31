@@ -148,10 +148,10 @@ if __name__ == '__main__':
 
             # val = torch.where(mask == 1, x_aug, torch.zeros_like(x_aug))
             
-            # reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
+            reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
 
-            combined_aug = torch.cat((x_aug, tp_aug.unsqueeze(-1)*hidden_dim), 2)
-            reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
+            # combined_aug = torch.cat((x_aug, tp_aug.unsqueeze(-1)*hidden_dim), 2)
+            # reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
 
             out = rec(x_aug, tp_aug)
 
