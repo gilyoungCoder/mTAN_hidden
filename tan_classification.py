@@ -55,6 +55,7 @@ parser.add_argument('--num-ref-points', type=int, default=128)
 parser.add_argument('--classify-pertp', action='store_true')
 parser.add_argument('--aug-ratio', type=int, default=2)
 parser.add_argument('--drate', type=float, default=0.5)
+parser.add_argument('--sethidden', type=int, default=128)
 
 
 args = parser.parse_args()
@@ -86,7 +87,7 @@ if __name__ == '__main__':
     #     rec = models.enc_rnn3(
     #         dim, torch.linspace(0, 1., 128), args.latent_dim, args.rec_hidden, 128, learn_emb=args.learn_emb).to(device)
     # elif args.enc == 'mtan_rnn':
-    hidden_dim = 256
+    hidden_dim = args.sethidden
 
     rec = models.enc_mtan_rnn(
         hidden_dim, torch.linspace(0, 1., args.num_ref_points), args.latent_dim, args.rec_hidden, 
