@@ -74,7 +74,6 @@ class multiTimeAttention(nn.Module):
         # query : 1 x 1 x 128 x 128, key: 50 x 1 x 203 x embed_time(128)
         query, key = [l(x).view(x.size(0), -1, self.h, self.embed_time_k).transpose(1, 2)
                       for l, x in zip(self.linears, (query, key))]
-        # print(f"query : {query.shape}, key : {key.shape}")
         x, _ = self.attention(query, key, value, mask, dropout)
         x = x.transpose(1, 2).contiguous() \
              .view(batch, -1, self.h * dim)
@@ -91,7 +90,7 @@ class TimeSeriesAugmentation(nn.Module):
             nn.Linear(input_dim, 300),
             nn.ReLU(),
             nn.Linear(300, hidden_dim))
-        self.dim = input_dim
+        self.dim = output_dim
         # Set Transformer 모델
         self.set_transformer = SetTransformer(dim_input=hidden_dim, num_outputs=num_outputs, dim_output=hidden_dim)
         
@@ -114,7 +113,6 @@ class TimeSeriesAugmentation(nn.Module):
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환
         augmented_out = self.final_transform(augmented_representation)
         output = self.sigmoid(augmented_out)
-        
         # 새로운 t와 x 분리
         new_x, new_t = output[ :, :, :self.dim-1], output[:, :, -1]
         return new_x, new_t
@@ -130,7 +128,7 @@ class enc_mtan_rnn(nn.Module):
         self.nhidden = nhidden
         self.query = query
         self.learn_emb = learn_emb
-        self.att = multiTimeAttention(2*input_dim, nhidden, embed_time, num_heads)
+        self.att = multiTimeAttention(input_dim, nhidden, embed_time, num_heads)
         self.gru_rnn = nn.GRU(nhidden, nhidden, bidirectional=True, batch_first=True)
 
         self.hiddens_to_z0 = nn.Sequential(

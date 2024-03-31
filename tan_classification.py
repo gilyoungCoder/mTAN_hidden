@@ -100,7 +100,7 @@ if __name__ == '__main__':
         
     classifier = models.create_classifier(args.latent_dim, args.rec_hidden).to(device)
 
-    aug = models.TimeSeriesAugmentation(dim*2+1, 256, dim*2+1, num_outputs=args.aug_ratio*num_tp).to(device)
+    aug = models.TimeSeriesAugmentation(dim*2+1, 256, dim+1, num_outputs=args.aug_ratio*num_tp).to(device)
     
     params = (list(rec.parameters()) + list(dec.parameters()) + list(classifier.parameters()) + list(aug.parameters()))
     print('parameters:', utils.count_parameters(rec), utils.count_parameters(dec), utils.count_parameters(classifier), utils.count_parameters(aug))
