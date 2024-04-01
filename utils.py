@@ -42,17 +42,17 @@ def batch_cosine_similarity_penalty(X):
     penalties = []
     for batch in range(batch_size):
         # 현재 배치 선택: (time point, feature)
-        current_batch = X[batch]
+        current_batch = X[batch] + 1e-9
         
         # 정규화
         norm = torch.norm(current_batch, p=2, dim=1, keepdim=True)
-        current_batch_norm = current_batch / (norm + 1e-6)
+        current_batch_norm = current_batch / (norm)
         
         # Cosine similarity 계산
         similarity_matrix = torch.matmul(current_batch_norm, current_batch_norm.T)
-        if random.random()<0.01:
-            print("sim mat : ", similarity_matrix.shape)
-            print("sim mat : ", similarity_matrix)
+        # if random.random()<0.01:
+        #     print("sim mat : ", similarity_matrix.shape)
+        #     print("sim mat : ", similarity_matrix)
 
         
         # 자기 자신과의 similarity(1)를 제외하고 나머지 값들의 합을 구합니다.
@@ -85,6 +85,20 @@ def spread_regularization_loss(hidden_states):
     
     # Calculate the mean of the inverse distances
     loss = inv_distances.sum() / (batch_size * num_elements * (num_elements - 1))
+    return loss
+
+def efficient_spread_regularization_loss(hidden_states):
+    batch_size, num_elements, _ = hidden_states.size()
+    loss = 0.0
+
+    for i in range(num_elements):
+        diff = hidden_states - hidden_states[:, i:i+1, :]
+        distance = torch.sqrt(torch.sum(diff ** 2, dim=-1) + 1e-9)
+        inv_distance = 1.0 / distance
+        inv_distance[:, i] = 0  # 대각선 요소를 0으로 설정
+        loss += inv_distance.sum()
+
+    loss /= (batch_size * num_elements * (num_elements - 1))
     return loss
 
 def count_parameters(model):

@@ -153,7 +153,7 @@ if __name__ == '__main__':
             combined_aug = torch.cat([x_aug, tp_aug.unsqueeze(-1)*hidden_dim], dim=-1)
             # reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
 
-            reg_loss = utils.spread_regularization_loss(combined_aug)
+            reg_loss = utils.efficient_spread_regularization_loss(combined_aug)
             out = rec(x_aug, tp_aug)
 
             # x_aug, time_steps = aug(observed_tp, torch.cat((observed_data, observed_mask), 2))
@@ -171,9 +171,9 @@ if __name__ == '__main__':
             # reg_loss = utils.diversity_regularization(time_steps, drate = 0.5)
             # val = torch.where(mask == 1, x_aug, torch.zeros_like(x_aug))
             
-            if random.random() < 0.003:
-                print(combined_aug[0])
-                print(combined_aug.shape)
+            # if random.random() < 0.003:
+            #     print(combined_aug[0])
+            #     print(combined_aug.shape)
             #     # print(f"alpha : {self.alpha}")
             #     # print(f"original tt : {combined_x[0, :, -1]}")
             #     print(f"mask_raw: {x_copy[0, :, self.dim:2*self.dim]}")
