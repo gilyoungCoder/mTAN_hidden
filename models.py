@@ -92,13 +92,13 @@ class TimeSeriesAugmentation(nn.Module):
             nn.Linear(300, hidden_dim))
         self.dim = output_dim
         # Set Transformer 모델
-        self.set_transformer = SetTransformer(dim_input=hidden_dim, num_outputs=num_outputs, dim_output=output_dim)
+        self.set_transformer = SetTransformer(dim_input=hidden_dim, num_outputs=num_outputs, dim_output=hidden_dim)
         
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환하기 위한 레이어
         # self.final_transform = nn.Linear(hidden_dim, output_dim)
-        # self.final_transform = nn.Sequential(
-        #     # nn.ReLU(),
-        #     nn.Linear(hidden_dim, hidden_dim+1))
+        self.final_transform = nn.Sequential(
+            nn.ReLU(),
+            nn.Linear(hidden_dim, output_dim))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, t, x):
@@ -111,8 +111,8 @@ class TimeSeriesAugmentation(nn.Module):
         # augmented_representation = self.set_transformer(tx)
         
         # 증폭된 숨겨진 표현을 (t, x) 형식으로 변환
-        # augmented_out = self.final_transform(augmented_representation)
-        output = self.sigmoid(augmented_representation)
+        augmented_out = self.final_transform(augmented_representation)
+        output = self.sigmoid(augmented_out)
         # 새로운 t와 x 분리
         new_x, new_t = output[ :, :, :-1], output[:, :, -1]
 

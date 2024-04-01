@@ -50,6 +50,10 @@ def batch_cosine_similarity_penalty(X):
         
         # Cosine similarity 계산
         similarity_matrix = torch.matmul(current_batch_norm, current_batch_norm.T)
+        if random.random()<0.01:
+            print("sim mat : ", similarity_matrix.shape)
+            print("sim mat : ", similarity_matrix)
+
         
         # 자기 자신과의 similarity(1)를 제외하고 나머지 값들의 합을 구합니다.
         num_elements = time_point
@@ -62,6 +66,26 @@ def batch_cosine_similarity_penalty(X):
     
     return average_penalty
 
+def spread_regularization_loss(hidden_states):
+    batch_size, num_elements, _ = hidden_states.size()
+    
+    # Expand the hidden states to calculate differences
+    expanded_states = hidden_states.unsqueeze(1) - hidden_states.unsqueeze(2)
+    
+    # Calculate the Euclidean distance for each pair of points
+    distance_matrix = torch.sqrt(torch.sum(expanded_states ** 2, dim=-1) + 1e-9)
+    
+    # Calculate the inverse of distances
+    inv_distances = 1.0 / distance_matrix
+    
+    # Create a mask to zero out the diagonals
+    mask = torch.eye(num_elements).to(hidden_states.device)
+    mask = mask.unsqueeze(0).expand(batch_size, num_elements, num_elements)
+    inv_distances = inv_distances * (1 - mask)
+    
+    # Calculate the mean of the inverse distances
+    loss = inv_distances.sum() / (batch_size * num_elements * (num_elements - 1))
+    return loss
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)

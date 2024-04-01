@@ -61,6 +61,9 @@ class PMA(nn.Module):
         self.mab = MAB(dim, dim, dim, num_heads, ln=ln)
 
     def forward(self, X):
-        # if random.random() < 0.003:
-        #     print("PMA key Parameter: ", self.S)
+        # if random.random() < 0.01:
+            # print("PMA key Parameter: ", self.S)
+            # print("PMA key Parameter Grad: ", self.S.grad)
+
+
         return self.mab(self.S.repeat(X.size(0), 1, 1), X)

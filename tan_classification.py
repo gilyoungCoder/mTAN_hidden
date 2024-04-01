@@ -53,9 +53,9 @@ parser.add_argument('--enc-num-heads', type=int, default=1)
 parser.add_argument('--dec-num-heads', type=int, default=1)
 parser.add_argument('--num-ref-points', type=int, default=128)
 parser.add_argument('--classify-pertp', action='store_true')
-parser.add_argument('--aug-ratio', type=int, default=2)
+parser.add_argument('--aug-ratio', type=int, default=1)
 parser.add_argument('--drate', type=float, default=0.5)
-parser.add_argument('--sethidden', type=int, default=64)
+parser.add_argument('--sethidden', type=int, default=41)
 
 
 args = parser.parse_args()
@@ -148,11 +148,12 @@ if __name__ == '__main__':
 
             # val = torch.where(mask == 1, x_aug, torch.zeros_like(x_aug))
             
-            reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
+            # reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
 
-            # combined_aug = torch.cat((x_aug, tp_aug.unsqueeze(-1)*hidden_dim), 2)
+            combined_aug = torch.cat([x_aug, tp_aug.unsqueeze(-1)*hidden_dim], dim=-1)
             # reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
 
+            reg_loss = utils.spread_regularization_loss(combined_aug)
             out = rec(x_aug, tp_aug)
 
             # x_aug, time_steps = aug(observed_tp, torch.cat((observed_data, observed_mask), 2))
@@ -170,7 +171,9 @@ if __name__ == '__main__':
             # reg_loss = utils.diversity_regularization(time_steps, drate = 0.5)
             # val = torch.where(mask == 1, x_aug, torch.zeros_like(x_aug))
             
-            # if random.random() < 0.003:
+            if random.random() < 0.003:
+                print(combined_aug[0])
+                print(combined_aug.shape)
             #     # print(f"alpha : {self.alpha}")
             #     # print(f"original tt : {combined_x[0, :, -1]}")
             #     print(f"mask_raw: {x_copy[0, :, self.dim:2*self.dim]}")
