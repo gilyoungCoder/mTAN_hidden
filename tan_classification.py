@@ -151,9 +151,9 @@ if __name__ == '__main__':
             # reg_loss = utils.diversity_regularization(tp_aug, drate = args.drate)
 
             combined_aug = torch.cat([x_aug, tp_aug.unsqueeze(-1)*hidden_dim], dim=-1)
-            # reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
+            reg_loss = utils.batch_cosine_similarity_penalty(combined_aug)
 
-            reg_loss = utils.efficient_spread_regularization_loss(combined_aug)
+            # reg_loss = utils.spread_regularization_loss(combined_aug)
             out = rec(x_aug, tp_aug)
 
             # x_aug, time_steps = aug(observed_tp, torch.cat((observed_data, observed_mask), 2))
